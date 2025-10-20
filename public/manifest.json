@@ -5,7 +5,8 @@
   "description": "Extension to automate Google Forms with React interface",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "background": {
     "service_worker": "background.js"

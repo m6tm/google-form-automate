@@ -1,23 +1,26 @@
 import React from 'react';
 import { Settings, Play, Pause } from 'lucide-react';
+import RepeaterForm from './components/repreater-form';
+import CustomButton from './components/CustomButton';
 
 function App() {
   return (
-    <div className="w-80 h-96 p-4 bg-gray-100">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Google Form Automate</h1>
+    <div className="bg-gray-100 p-4 w-80 min-h-96" data-theme="mytheme">
+      <h1 className="mb-4 font-bold text-gray-800 text-2xl">Google Form Automate</h1>
       <div className="space-y-2">
-        <button className="flex items-center w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-          <Play className="w-5 h-5 mr-2" />
+        <RepeaterForm />
+        <CustomButton variant="primary" onClick={() => {}}>
+          <Play className="mr-2 w-5 h-5" />
           Start Automation
-        </button>
-        <button className="flex items-center w-full px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
-          <Pause className="w-5 h-5 mr-2" />
+        </CustomButton>
+        <CustomButton variant="secondary" onClick={() => {}}>
+          <Pause className="mr-2 w-5 h-5" />
           Pause
-        </button>
-        <button className="flex items-center w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-          <Settings className="w-5 h-5 mr-2" />
+        </CustomButton>
+        <CustomButton variant="accent" onClick={() => {}}>
+          <Settings className="mr-2 w-5 h-5" />
           Settings
-        </button>
+        </CustomButton>
       </div>
     </div>
   );
