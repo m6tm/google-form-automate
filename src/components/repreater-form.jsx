@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, Save, Download, Upload, RotateCcw } from 'lucide-react';
 import CustomInput from './CustomInput';
 import CustomSelect from './CustomSelect';
 import CustomButton from './CustomButton';
@@ -24,6 +24,10 @@ function RepeaterForm() {
     setFields(fields.map(f => f.id === id ? { ...f, [key]: value } : f));
   };
 
+  const resetFields = () => {
+    setFields([{ id: 1, name: '', value: '', type: 'text' }]);
+  };
+
   const fieldTypes = [
     { value: 'text', label: 'Texte' },
     { value: 'email', label: 'Email' },
@@ -36,6 +40,23 @@ function RepeaterForm() {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end space-x-2">
+        <CustomButton variant="ghost" size="sm" onClick={() => {}}>
+          <RefreshCw className="w-4 h-4" />
+        </CustomButton>
+        <CustomButton variant="ghost" size="sm" onClick={() => {}}>
+          <Save className="w-4 h-4" />
+        </CustomButton>
+        <CustomButton variant="ghost" size="sm" onClick={() => {}}>
+          <Download className="w-4 h-4" />
+        </CustomButton>
+        <CustomButton variant="ghost" size="sm" onClick={() => {}}>
+          <Upload className="w-4 h-4" />
+        </CustomButton>
+        <CustomButton variant="ghost" size="sm" onClick={resetFields}>
+          <RotateCcw className="w-4 h-4" />
+        </CustomButton>
+      </div>
       <h2 className="font-semibold text-lg">Configuration des champs</h2>
       {fields.map((field) => (
         <div key={field.id} className="bg-white p-4 border border-gray-300 rounded">
