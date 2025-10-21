@@ -45,7 +45,7 @@ function RepeaterForm() {
     { value: "number", label: "Nombre" },
     { value: "checkbox", label: "Case à cocher" },
     { value: "radio", label: "Bouton radio" },
-    { value: "select", label: "Sélection" },
+    // { value: "select", label: "Sélection" },
     { value: "textarea", label: "Zone de texte" },
   ];
 

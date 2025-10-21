@@ -2,7 +2,6 @@ import React from "react";
 import CustomInput from "./CustomInput";
 import CustomSelect from "./CustomSelect";
 import CustomTextarea from "./CustomTextarea";
-import CustomRadio from "./CustomRadio";
 
 export default function CBuilder({
   type,
@@ -85,7 +84,7 @@ export default function CBuilder({
       );
     case "radio":
       return (
-        <CustomRadio
+        <CustomRadioField
           label={label}
           value={value}
           onChange={onChange}
@@ -225,6 +224,113 @@ function CustomCheckboxField({ label, value, onChange, ...props }) {
         <button onClick={addItem} className="btn btn-sm btn-primary">
           Ajouter un item
         </button>
+      </div>
+    </div>
+  );
+}
+
+function CustomRadioField({ label, value, onChange, ...props }) {
+  const [option, setOption] = React.useState("");
+  const [otherOption, setOtherOption] = React.useState("");
+  const [otherValue, setOtherValue] = React.useState("");
+  const isMountedRef = React.useRef(true);
+  const timeoutRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (value && typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        if (parsed.option !== undefined && parsed.otherOption !== undefined && parsed.otherValue !== undefined) {
+          setOption(parsed.option);
+          setOtherOption(parsed.otherOption);
+          setOtherValue(parsed.otherValue);
+        }
+      } catch (e) {
+        // ignore invalid JSON
+      }
+    }
+  }, [value]);
+
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const isOptionFilled = option.trim() !== "";
+  const isOtherFilled = otherOption.trim() !== "" || otherValue.trim() !== "";
+
+  const handleOptionChange = (e) => {
+    const val = e.target.value;
+    setOption(val);
+    if (val.trim() !== "" && isOtherFilled) {
+      setOtherOption("");
+      setOtherValue("");
+    }
+  };
+
+  const handleOtherOptionChange = (e) => {
+    const val = e.target.value;
+    setOtherOption(val);
+    if (val.trim() !== "" && isOptionFilled) {
+      setOption("");
+    }
+  };
+
+  const handleOtherValueChange = (e) => {
+    const val = e.target.value;
+    setOtherValue(val);
+    if (val.trim() !== "" && isOptionFilled) {
+      setOption("");
+    }
+  };
+
+  // Update parent on changes
+  React.useEffect(() => {
+    if (isMountedRef.current && onChange) {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        const fullValue = { option, otherOption, otherValue };
+        onChange({ target: { value: JSON.stringify(fullValue) } });
+      }, 300);
+    }
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [option, otherOption, otherValue, onChange]);
+
+  return (
+    <div className="form-control">
+      {label && (
+        <label className="label">
+          <span className="label-text">{label}</span>
+        </label>
+      )}
+      <div className="space-y-2">
+        <CustomInput
+          label="Option à cocher"
+          value={option}
+          onChange={handleOptionChange}
+          placeholder="Entrez l'option sélectionnée"
+          disabled={isOtherFilled}
+        />
+        <div className="flex items-end gap-2">
+          <CustomInput
+            label="Autre option"
+            value={otherOption}
+            onChange={handleOtherOptionChange}
+            placeholder="Entrez l'autre option"
+            disabled={isOptionFilled}
+          />
+          <CustomInput
+            label="Valeur de l'option"
+            value={otherValue}
+            onChange={handleOtherValueChange}
+            placeholder="Entrez la valeur"
+            disabled={isOptionFilled}
+          />
+        </div>
       </div>
     </div>
   );
