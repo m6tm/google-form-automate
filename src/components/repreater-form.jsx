@@ -37,6 +37,10 @@ function RepeaterForm() {
     setFields([{ id: 1, name: "", value: "", type: "text" }]);
   };
 
+  const fillForm = () => {
+    // TODO: fill form
+  };
+
   const fieldTypes = [
     { value: "text", label: "Texte" },
     { value: "date", label: "Date" },
@@ -81,7 +85,7 @@ function RepeaterForm() {
               onChange={(e) => updateField(field.id, "name", e.target.value)}
               placeholder="Entrez le label"
             />
-            {!["checkbox", "radio"].includes(field.type) ? (
+            {!["checkbox", "radio", "textarea"].includes(field.type) ? (
               <CBuilder
                 type={field.type}
                 label="Valeur"
@@ -104,7 +108,7 @@ function RepeaterForm() {
               <Trash2 className="w-4 h-4" />
             </CustomButton>
           </div>
-          {["checkbox", "radio"].includes(field.type) ? (
+          {["checkbox", "radio", "textarea"].includes(field.type) ? (
             <CBuilder
               type={field.type}
               label="Valeur"
@@ -118,6 +122,10 @@ function RepeaterForm() {
       <CustomButton onClick={addField} variant="success">
         <Plus className="mr-2 w-4 h-4" />
         Ajouter un champ
+      </CustomButton>
+      <CustomButton onClick={fillForm} variant="error">
+        <Plus className="mr-2 w-4 h-4" />
+        Remplir le formulaire
       </CustomButton>
     </div>
   );
