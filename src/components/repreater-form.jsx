@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Plus,
   Trash2,
@@ -18,6 +18,7 @@ function RepeaterForm() {
   const [fields, setFields] = useState([
     { id: 1, name: "", value: "", type: "text" },
   ]);
+  const [isMounting, setIsmounting] = useState(true);
   const { control, handleSubmit } = useForm();
 
   const addField = () => {
@@ -39,9 +40,50 @@ function RepeaterForm() {
     setFields([{ id: 1, name: "", value: "", type: "text" }]);
   };
 
-  const fillForm = (formData) => {
-    console.log("Form data from react-hook-form:", formData);
+  useEffect(() => {
+    if (isMounting)
+      chrome.storage.sync.get("formData", (result) => {
+        console.log("résultat:", result);
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError);
+          return;
+        }
+        if (!result["formData"]) {
+          console.log("No form data found in storage.");
+          return;
+        }
+        setFields(result["formData"]);
+        setIsmounting(false);
+      });
+  }, [isMounting]);
+
+  const fillForm = (_formData) => {
     console.log("Fields state:", fields);
+    chrome.storage.sync.set({ formData: fields }, () => {
+      console.log("Form data saved to Chrome storage");
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+          const url = tabs[0].url;
+          if (url && url.includes("docs.google.com/forms")) {
+            chrome.tabs.sendMessage(
+              tabs[0].id,
+              { action: "fillForm" },
+              (response) => {
+                if (chrome.runtime.lastError) {
+                  console.error(chrome.runtime.lastError);
+                } else {
+                  console.log("Form filling initiated:", response);
+                }
+              }
+            );
+          } else {
+            alert(
+              "Veuillez naviguer vers un formulaire Google Forms pour utiliser cette fonctionnalité."
+            );
+          }
+        }
+      });
+    });
   };
 
   const fieldTypes = [

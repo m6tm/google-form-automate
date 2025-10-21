@@ -18,7 +18,7 @@
   "content_scripts": [
     {
       "matches": ["https://docs.google.com/forms/*"],
-      "js": ["content.js"]
+      "js": ["content.js", "scripts/actions.js"]
     }
   ]
 }
