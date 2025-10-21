@@ -105,7 +105,7 @@ const QuestionHandlers = {
       }
     },
   },
-  multiple_choice: {
+  checkbox: {
     selector: "div[role='list']",
     fill: (container, answer) => {
       const { items, lastItem } = answer;
@@ -155,6 +155,65 @@ const QuestionHandlers = {
       });
     },
   },
+  radio: {
+    selector: "div[role='radiogroup']",
+    fill: (container, answer) => {
+      console.log("Filling radio with:", answer);
+
+      // answer is { option, otherOption, otherValue }
+      const { items, lastItem } = answer;
+      const isItems = !!items.at(0)?.cle;
+      const isLastItem = lastItem.valeur !== "";
+      const radio_type = isItems && !isLastItem ? "items" : "lastItem";
+      const option = lastItem && lastItem.valeur !== "" ? null : items.at(0);
+
+      const radios = container.querySelectorAll("div[role='radio']");
+      console.log(radio_type);
+
+      if (radio_type === "items") {
+        const input = container.querySelector('input[type="text"]');
+        if (input && input.value !== "") {
+          input.value = "";
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+
+        // Find and click radio with matching label
+        radios.forEach((radio) => {
+          const label = radio
+            .closest("label")
+            ?.querySelector("span[class*='snByac']")
+            ?.textContent?.trim();
+          if (
+            label &&
+            label.toLowerCase() === option.cle.toLowerCase().trim()
+          ) {
+            const isChecked = radio.getAttribute("aria-checked") === "true";
+            if (!isChecked) radio.click();
+          }
+        });
+      } else if (radio_type === "lastItem") {
+        // Find the "other" radio and select it, then fill input
+        const otherRadio =
+          Array.from(radios).find(
+            (radio) => radio.getAttribute("data-value") === "__other_option__"
+          ) || radios[radios.length - 1]; // Fallback to last
+
+        if (otherRadio) {
+          otherRadio.click();
+          // Fill the associated input
+          const input = otherRadio
+            .closest("div[role='listitem']")
+            ?.querySelector("input[type='text']");
+          if (input) {
+            input.value = lastItem.valeur;
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+      }
+    },
+  },
 };
 
 /**
@@ -187,14 +246,7 @@ function OnDataFetch(formData) {
       const formTitle = formTitleElement.firstChild.textContent.trim();
       const bestMatch = findBestMatchingQuestion(formTitle, formData);
       if (bestMatch) {
-        console.log("bestMatch", bestMatch);
-        if (
-          ["text", "email", "number", "date", "time", "checkbox"].includes(
-            bestMatch.type
-          )
-        ) {
-          handler.fill(field, bestMatch.value);
-        }
+        handler.fill(field, bestMatch.value);
       }
     });
   });
