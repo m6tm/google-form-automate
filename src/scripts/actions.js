@@ -108,52 +108,58 @@ const QuestionHandlers = {
   multiple_choice: {
     selector: "div[role='list']",
     fill: (container, answer) => {
-      answer = JSON.parse(answer);
-      const selectedAnswers = Array.isArray(answer) ? answer : [answer];
-      console.log(selectedAnswers);
+      const { items, lastItem } = answer;
+      console.log("Filling checkbox with:", answer);
 
-      // Extract predefined options and other answers
-      const predefinedAnswers = [];
-      let otherAnswer = null;
+      // Collect options to check
+      const optionsToCheck = items.map((item) => item.cle.toLowerCase().trim());
 
-      selectedAnswers.forEach((item) => {
-        if (typeof item === "string") {
-          predefinedAnswers.push(item);
-        } else if (item && typeof item === "object" && item.Autre) {
-          otherAnswer = item.Autre;
-        }
-      });
+      // Handle other option
+      let otherValue = null;
+      let otherLabel = null;
+      if (lastItem && lastItem.cle && lastItem.valeur) {
+        otherLabel = lastItem.cle.toLowerCase().trim();
+        otherValue = lastItem.valeur;
+      }
 
-      const options = container.querySelectorAll("div[role='listitem']");
-      options.forEach((option) => {
-        const label = option.querySelector("span[class*='snByac']");
+      const listItems = container.querySelectorAll("div[role='listitem']");
+      listItems.forEach((option) => {
+        const label = option.querySelector("label[for]");
         if (label) {
           const labelText = label.textContent.trim();
-          const shouldBeChecked = predefinedAnswers.includes(labelText);
+          const normalizedLabel = labelText
+            .toLowerCase()
+            .replace(/:$/, "")
+            .trim(); // Remove trailing colon and lowercase
+
           const checkbox = option.querySelector("div[role='checkbox']");
+
           if (checkbox) {
             const isChecked = checkbox.getAttribute("aria-checked") === "true";
+
+            // Check if this option should be selected
+            const shouldBeChecked =
+              optionsToCheck.includes(normalizedLabel) ||
+              (otherLabel &&
+                normalizedLabel === otherLabel &&
+                otherValue !== null);
+
             if (shouldBeChecked !== isChecked) {
               checkbox.click();
             }
-          }
-        }
 
-        // Handle 'other' option
-        const otherLabel = option.querySelector("span[class*='snByac']");
-        if (otherLabel && otherLabel.textContent.trim() === "Autre :") {
-          const otherCheckbox = option.querySelector("div[role='checkbox']");
-          const otherInput = option.querySelector("input[type='text']");
-          if (otherCheckbox && otherInput) {
-            if (otherAnswer) {
-              // Check the 'other' checkbox if not already checked
-              if (otherCheckbox.getAttribute("aria-checked") !== "true") {
-                otherCheckbox.click();
+            console.log("checkbox ...", answer.lastItem);
+            // If it's the "other" option and we have a value, fill the input
+            if (answer.lastItem) {
+              otherOption = answer.lastItem;
+              const otherInput = option.querySelector("input[type='text']");
+              if (otherInput) {
+                otherInput.value = otherOption.valeur;
+                otherInput.dispatchEvent(new Event("input", { bubbles: true }));
+                otherInput.dispatchEvent(
+                  new Event("change", { bubbles: true })
+                );
               }
-              // Fill the input
-              otherInput.value = otherAnswer;
-              otherInput.dispatchEvent(new Event("input", { bubbles: true }));
-              otherInput.dispatchEvent(new Event("change", { bubbles: true }));
             }
           }
         }
@@ -194,7 +200,9 @@ function OnDataFetch(formData) {
       if (bestMatch) {
         console.log("bestMatch", bestMatch);
         if (
-          ["text", "email", "number", "date", "time"].includes(bestMatch.type)
+          ["text", "email", "number", "date", "time", "checkbox"].includes(
+            bestMatch.type
+          )
         ) {
           handler.fill(field, bestMatch.value);
         }
