@@ -132,15 +132,10 @@ function CustomCheckboxField({ label, value, onChange, ...props }) {
   const timeoutRef = React.useRef(null);
 
   React.useEffect(() => {
-    if (value && typeof value === "string") {
-      try {
-        const parsed = JSON.parse(value);
-        if (parsed.items && parsed.lastItem) {
-          setItems(parsed.items);
-          setLastItem(parsed.lastItem);
-        }
-      } catch (e) {
-        // ignore invalid JSON
+    if (value && typeof value === "object") {
+      if (value.items && value.lastItem) {
+        setItems(value.items);
+        setLastItem(value.lastItem);
       }
     }
   }, [value]);
@@ -177,7 +172,7 @@ function CustomCheckboxField({ label, value, onChange, ...props }) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         const fullValue = { items, lastItem };
-        onChange({ target: { value: JSON.stringify(fullValue) } });
+        onChange({ target: { value: fullValue } });
       }, 300);
     }
     return () => {
@@ -237,16 +232,11 @@ function CustomRadioField({ label, value, onChange, ...props }) {
   const timeoutRef = React.useRef(null);
 
   React.useEffect(() => {
-    if (value && typeof value === "string") {
-      try {
-        const parsed = JSON.parse(value);
-        if (parsed.option !== undefined && parsed.otherOption !== undefined && parsed.otherValue !== undefined) {
-          setOption(parsed.option);
-          setOtherOption(parsed.otherOption);
-          setOtherValue(parsed.otherValue);
-        }
-      } catch (e) {
-        // ignore invalid JSON
+    if (value && typeof value === "object") {
+      if (value.option !== undefined && value.otherOption !== undefined && value.otherValue !== undefined) {
+        setOption(value.option);
+        setOtherOption(value.otherOption);
+        setOtherValue(value.otherValue);
       }
     }
   }, [value]);
@@ -292,7 +282,7 @@ function CustomRadioField({ label, value, onChange, ...props }) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         const fullValue = { option, otherOption, otherValue };
-        onChange({ target: { value: JSON.stringify(fullValue) } });
+        onChange({ target: { value: fullValue } });
       }, 300);
     }
     return () => {

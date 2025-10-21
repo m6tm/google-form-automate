@@ -12,11 +12,13 @@ import CustomInput from "./CustomInput";
 import CustomSelect from "./CustomSelect";
 import CustomButton from "./CustomButton";
 import CBuilder from "./CBuilder";
+import { useForm, Controller } from "react-hook-form";
 
 function RepeaterForm() {
   const [fields, setFields] = useState([
     { id: 1, name: "", value: "", type: "text" },
   ]);
+  const { control, handleSubmit } = useForm();
 
   const addField = () => {
     const newId = Math.max(...fields.map((f) => f.id)) + 1;
@@ -37,8 +39,9 @@ function RepeaterForm() {
     setFields([{ id: 1, name: "", value: "", type: "text" }]);
   };
 
-  const fillForm = () => {
-    // TODO: fill form
+  const fillForm = (formData) => {
+    console.log("Form data from react-hook-form:", formData);
+    console.log("Fields state:", fields);
   };
 
   const fieldTypes = [
@@ -73,19 +76,64 @@ function RepeaterForm() {
         </CustomButton>
       </div>
       <h2 className="font-semibold text-lg">Configuration des champs</h2>
-      {fields.map((field) => (
-        <div
-          key={field.id}
-          className="bg-white p-4 border border-gray-300 rounded"
-        >
-          <div className="items-end gap-4 grid grid-cols-4">
-            <CustomInput
-              label="Nom"
-              value={field.name}
-              onChange={(e) => updateField(field.id, "name", e.target.value)}
-              placeholder="Entrez le label"
-            />
-            {!["checkbox", "radio", "textarea"].includes(field.type) ? (
+      <form onSubmit={handleSubmit(fillForm)}>
+        {fields.map((field) => (
+          <div
+            key={field.id}
+            className="bg-white p-4 border border-gray-300 rounded"
+          >
+            <div className="items-end gap-4 grid grid-cols-4">
+              <Controller
+                name={`name-${field.id}`}
+                control={control}
+                render={({ field: inputField }) => (
+                  <CustomInput
+                    {...inputField}
+                    onChange={(e) => {
+                      inputField.onChange(e);
+                      updateField(field.id, "name", e.target.value);
+                    }}
+                    label="Nom"
+                    placeholder="Entrez le label"
+                  />
+                )}
+              />
+              {!["checkbox", "radio", "textarea"].includes(field.type) ? (
+                <CBuilder
+                  type={field.type}
+                  label="Valeur"
+                  value={field.value}
+                  onChange={(e) =>
+                    updateField(field.id, "value", e.target.value)
+                  }
+                  placeholder="Entrez la valeur"
+                />
+              ) : null}
+              <Controller
+                name={`type-${field.id}`}
+                control={control}
+                render={({ field: selectField }) => (
+                  <CustomSelect
+                    {...selectField}
+                    onChange={(e) => {
+                      selectField.onChange(e);
+                      updateField(field.id, "type", e.target.value);
+                    }}
+                    label="Type"
+                    options={fieldTypes}
+                  />
+                )}
+              />
+              <CustomButton
+                type="button"
+                onClick={() => removeField(field.id)}
+                disabled={fields.length === 1}
+                variant="error"
+              >
+                <Trash2 className="w-4 h-4" />
+              </CustomButton>
+            </div>
+            {["checkbox", "radio", "textarea"].includes(field.type) ? (
               <CBuilder
                 type={field.type}
                 label="Valeur"
@@ -94,39 +142,19 @@ function RepeaterForm() {
                 placeholder="Entrez la valeur"
               />
             ) : null}
-            <CustomSelect
-              label="Type"
-              value={field.type}
-              onChange={(e) => updateField(field.id, "type", e.target.value)}
-              options={fieldTypes}
-            />
-            <CustomButton
-              onClick={() => removeField(field.id)}
-              disabled={fields.length === 1}
-              variant="error"
-            >
-              <Trash2 className="w-4 h-4" />
-            </CustomButton>
           </div>
-          {["checkbox", "radio", "textarea"].includes(field.type) ? (
-            <CBuilder
-              type={field.type}
-              label="Valeur"
-              value={field.value}
-              onChange={(e) => updateField(field.id, "value", e.target.value)}
-              placeholder="Entrez la valeur"
-            />
-          ) : null}
+        ))}
+        <div className="flex gap-3 space-x-2 mt-3">
+          <CustomButton type="button" onClick={addField} variant="success">
+            <Plus className="mr-2 w-4 h-4" />
+            Ajouter un champ
+          </CustomButton>
+          <CustomButton type="submit" variant="success">
+            <Plus className="mr-2 w-4 h-4" />
+            Remplir le formulaire
+          </CustomButton>
         </div>
-      ))}
-      <CustomButton onClick={addField} variant="success">
-        <Plus className="mr-2 w-4 h-4" />
-        Ajouter un champ
-      </CustomButton>
-      <CustomButton onClick={fillForm} variant="error">
-        <Plus className="mr-2 w-4 h-4" />
-        Remplir le formulaire
-      </CustomButton>
+      </form>
     </div>
   );
 }
