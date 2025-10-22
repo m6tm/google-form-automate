@@ -93,7 +93,7 @@ function RepeaterForm() {
     { value: "email", label: "Email" },
     { value: "number", label: "Nombre" },
     { value: "checkbox", label: "Case à cocher" },
-    { value: "radio", label: "Bouton radio" },
+    // { value: "radio", label: "Bouton radio" },
     // { value: "select", label: "Sélection" },
     { value: "textarea", label: "Zone de texte" },
   ];
