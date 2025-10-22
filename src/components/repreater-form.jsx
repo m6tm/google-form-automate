@@ -19,7 +19,7 @@ function RepeaterForm() {
     { id: 1, name: "", value: "", type: "text" },
   ]);
   const [isMounting, setIsmounting] = useState(true);
-  const { control, handleSubmit } = useForm();
+  const { control, handleSubmit, setValue } = useForm();
 
   const addField = () => {
     const newId = Math.max(...fields.map((f) => f.id)) + 1;
@@ -53,9 +53,14 @@ function RepeaterForm() {
           return;
         }
         setFields(result["formData"]);
+        // Set form values for each restored field
+        result["formData"].forEach((field) => {
+          setValue(`name-${field.id}`, field.name);
+          setValue(`type-${field.id}`, field.type);
+        });
         setIsmounting(false);
       });
-  }, [isMounting]);
+  }, [isMounting, setValue]);
 
   const fillForm = (_formData) => {
     console.log("Fields state:", fields);
