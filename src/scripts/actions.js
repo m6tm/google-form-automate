@@ -109,6 +109,7 @@ const QuestionHandlers = {
     selector: "div[role='list']",
     fill: (container, answer) => {
       const { items, lastItem } = answer;
+      console.log("checkbox", items, lastItem);
 
       // Collect options to check
       const optionsToCheck = items.map((item) => item.cle.toLowerCase().trim());
@@ -157,7 +158,7 @@ const QuestionHandlers = {
   },
   radio: {
     selector: "div[role='radiogroup']",
-    fill: (container, answer) => {
+    fill: async (container, answer) => {
       console.log("Filling radio with:", answer);
 
       // answer is { option, otherOption, otherValue }
@@ -168,22 +169,21 @@ const QuestionHandlers = {
       const option = lastItem && lastItem.valeur !== "" ? null : items.at(0);
 
       const radios = container.querySelectorAll("div[role='radio']");
-      console.log(radio_type);
+      const reset_btn = container
+        .closest("div[role='listitem']")
+        ?.querySelector("div[role='button']");
+
+      if (reset_btn) reset_btn.click();
 
       if (radio_type === "items") {
-        const input = container.querySelector('input[type="text"]');
-        if (input && input.value !== "") {
-          input.value = "";
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-          input.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-
         // Find and click radio with matching label
+        await sleep(0.3);
         radios.forEach((radio) => {
           const label = radio
             .closest("label")
             ?.querySelector("span[class*='snByac']")
-            ?.textContent?.trim();
+            ?.textContent?.replace(":", "")
+            .trim();
           if (
             label &&
             label.toLowerCase() === option.cle.toLowerCase().trim()
@@ -192,7 +192,12 @@ const QuestionHandlers = {
             if (!isChecked) radio.click();
           }
         });
-      } else if (radio_type === "lastItem") {
+        await sleep(0.3);
+        const input = container.querySelector('input[type="text"]');
+        if (input) input.value = "";
+      }
+
+      if (radio_type === "lastItem") {
         // Find the "other" radio and select it, then fill input
         const otherRadio =
           Array.from(radios).find(
@@ -249,6 +254,14 @@ function OnDataFetch(formData) {
         handler.fill(field, bestMatch.value);
       }
     });
+  });
+}
+
+function sleep(seconds = 1) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, seconds * 1000);
   });
 }
 
